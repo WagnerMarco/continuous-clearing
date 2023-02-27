@@ -33,7 +33,6 @@ jobs:
      #   echo "SemVer: $GITVERSION_SEMVER" 
      
     - name: Gitversion
-      if: github.ref == 'refs/heads/main'
       id: gitversion
       run: |
         dotnet tool install --global GitVersion.Tool --version 5.3.6
