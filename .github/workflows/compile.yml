@@ -9,23 +9,48 @@ jobs:
   
     defaults:
       run:
-        working-directory: .
-        
+        working-directory: ./src
+    
+    outputs:
+      semver: ${{ steps.gitversion.outputs.semver }}
+      LicenseClearingTool: ${{ steps.packageBuildResults.outputs.LicenseClearingTool }}
         
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
-        fetch-depth: 0   
-      
+        fetch-depth: 0
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+    
+     
+    #- name: Determine Version
+     # uses: gittools/actions/gitversion/execute@v0.9.7
+
+    #- name: Display SemVer
+     # run: |
+     #   echo "SemVer: $GITVERSION_SEMVER" 
+     
+    - name: Gitversion
+      if: github.ref == 'refs/heads/main'
+      id: gitversion
+      run: |
+        dotnet tool install --global GitVersion.Tool --version 5.3.6
+        dotnet gitversion /output buildserver /nofetch
+        echo %GITVERSION_SEMVER%
+        Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
+        dotnet gitversion /output file /outputfile version.json
+     
+     
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     
     - name: Restore Packages
-      run: dotnet restore src\LicenseClearingTool.sln 
-    
+      run: dotnet restore LicenseClearingTool.sln 
+      
     - name: Build
-      run: msbuild -m -t:Rebuild -p:Configuration=Release -bl:continous-clearing.binlog -noconlog src\LicenseClearingTool.sln
+      run: msbuild -m -t:Rebuild -p:Configuration=Release -bl:continous-clearing.binlog -noconlog LicenseClearingTool.sln
     
     - name: Archive Build Log
       uses: actions/upload-artifact@v2
@@ -34,39 +59,14 @@ jobs:
         name: Compile_Solution_log
         path: |
           src/*.binlog
-          *.binlog
-
-    - name: update appSettingsSW360IntegrationTest.json
-      run: |
-        $WF = Join-Path $env:GITHUB_WORKSPACE "Scripts"
-        Write-Host "'$WF'"
-        dir        
-        ./Scripts/json_update.ps1 -JsonFile 'src\TestUtilities\appSettingsSW360IntegrationTest.json' 
-      env:
-        SW360HOST: ${{ secrets.SW360HOST }}
-        SW360APPPORT: ${{ secrets.SW360APPPORT }}
-        FOSSYHOST: ${{ secrets.FOSSYHOST }}
-        FOSSYAPPPORT: ${{ secrets.FOSSYAPPPORT }}
-        USEREMAIL: ${{ secrets.USEREMAIL }}
-        ARTIFACTORYAPIKEY: ${{ secrets.ARTIFACTORYAPIKEY }}
-        JFROGURL: ${{ secrets.JFROGURL }}
-        SW360AUTHKEY: ${{ secrets.SW360AUTHTOKEN }}
-      
-    - name: update appsettingsUnitTest.json
-      run: ./Scripts/json_update_ut.ps1 -JsonFile 'src\UnitTestUtilities\appsettingsUnitTest.json' 
-      env:
-        SW360HOST: ${{ secrets.SW360HOST }}
-        SW360APPPORT: ${{ secrets.SW360APPPORT }}
-        FOSSYHOST: ${{ secrets.FOSSYHOST }}
-        FOSSYAPPPORT: ${{ secrets.FOSSYAPPPORT }}
-        JFROGURL: ${{ secrets.JFROGURL }}
+          
     - name: Create zip
       id: packageBuildResults
       run: |
         $sourceFolder = Join-Path $env:GITHUB_WORKSPACE "out" | Join-Path -ChildPath "*"
         $outFolder = Join-Path $env:GITHUB_WORKSPACE "out" | Join-Path -ChildPath "LicenseClearingTool" 
         New-Item -ItemType Directory -Force -Path $outFolder
-        $fileName = "LicenseClearingTool.zip"
+        $fileName = "LicenseClearingTool-$($env:GitVersion_SemVer).zip"
         Write-Host "Filename: '$fileName'"
         Write-Host "sourceFolder: '$sourceFolder'"
         Write-Host "Outfolder: '$outFolder'"
@@ -74,32 +74,6 @@ jobs:
         $outPath = Join-Path $outFolder $fileName
         Compress-Archive -DestinationPath $outPath -Path $sourceFolder -CompressionLevel Optimal
       
-    - name: SW3360 Instance refresh
-      if: ${{ false }}  # disable for now
-      run: |
-        docker exec -dt sw360confctnr1 service postgresql stop
-        docker stop sw360confctnr1
-        docker rm sw360confctnr1        
-        docker run --name sw360confctnr1 --memory=7g -t -d -p ${env:SW360APPPORT}:8080 -p 5990:5984 -p 5440:5432 ${env:DOCKERDEVARTIFACTORY}/energy-dev/software-clearing/sw360/sw360conf:latest
-        Start-Sleep -s 540
-      env:
-         SW360APPPORT: ${{ secrets.SW360APPPORT }}
-         DOCKERDEVARTIFACTORY: ${{ secrets.DOCKERDEVARTIFACTORY }}
-         
-    - name: Test
-      if: ${{ false }}  # disable for now
-      run: |
-        $TestProjects = Get-ChildItem -Path *test*.csproj -Recurse -exclude TestUtilities.csproj,UnitTestUtilities.csproj
-        Write-Host "**************************The test projects considered for execution: $TestProjects   ******************************"
-        Write-Host "********************************************************************************************************************"
-        foreach ($Project in $TestProjects) 
-        {                 
-                Write-Host $Project.DirectoryName
-                $TestProject = $Project.DirectoryName
-                Push-Location $Project.PSParentPath
-                dotnet test --no-build --configuration Release
-        }
-
     - name: Archive Build Result
       uses: actions/upload-artifact@v2
       with:
@@ -107,18 +81,82 @@ jobs:
         path: |
            out/LicenseClearingTool
            
+  #  - name: Test
+   #   run: |
+    #    $TestProjects = Get-ChildItem -Path *.UTest.csproj -Recurse
+    #    foreach ($Project in $TestProjects) 
+     #   {                 
+      #          Write-Host $Project.DirectoryName
+       #         $TestProject = $Project.DirectoryName
+        #        Push-Location $Project.PSParentPath
+         #       dotnet test --no-build --configuration Release
+     #   }
     - name: Create Nuget Packages    
       run: |
+        nuget
         nuget pack CA.nuspec  
-        
+         
+             
+    #- name: Create Nuget Package
+     # run: |
+     #   $packageOutFolder = Join-Path $env:GITHUB_WORKSPACE "out" | Join-Path -ChildPath "NuGet"
+     #   dotnet pack LicenseClearingTool.sln --no-build --configuration Release --output $packageOutFolder
+         
+        #Write-Host "Save filenames of created NuGet packages..."
+     #   $packages = gci -Path $packageOutFolder -File "*.nupkg" 
+        #Write-Host "Binary NuGet Package: '$packages'"  
+                
     - name: Archive NuGet Packages
       uses: actions/upload-artifact@v2
       with:
         name: nuget-LicenseClearingTool
         path: |
-          LicenseClearingTool.1.0.0.nupkg   
-          
-    - name: Build the Docker image
-      run: |
-        docker build . --file Dockerfile --tag licenseclearingtool:2702
+          src/LicenseClearingTool.1.0.0.nupkg
 
+
+  release:
+    if: github.ref == 'refs/heads/main'
+#    if: github.ref == 'refs/heads/Pipeline_test'
+    runs-on: windows-latest
+    needs: build
+    defaults:
+      run: 
+        shell: pwsh
+    steps:
+      - name: Download Build Result
+        uses: actions/download-artifact@v2
+        with:
+          name: LicenseClearingTool
+
+      - name: Download NuGet Package
+        uses: actions/download-artifact@v2
+        with:
+          name: nuget-LicenseClearingTool
+      
+      - name: Debug
+        run: |
+          tree
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          #tag_name: ${{ needs.build.outputs.semver }}
+          tag_name: v1.0.1
+          release_name: Release v1.0.1
+          body: |
+            ${{ github.event.head_commit.message }}
+          draft: true
+          prerelease: true   
+          
+      - name: Upload Zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ./${{ needs.build.outputs.LicenseClearingTool }}
+          asset_name: ${{ needs.build.outputs.LicenseClearingTool }}
+          asset_content_type: application/zip
