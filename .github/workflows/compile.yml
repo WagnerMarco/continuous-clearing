@@ -39,7 +39,7 @@ jobs:
         dotnet gitversion /output buildserver /nofetch
         echo %GITVERSION_SEMVER%
         echo "SemVer: $GITVERSION_SEMVER" 
-        Write-Host '$env:GitVersion_SemVer'
+        Write-Host "version is: $($env:GitVersion_SemVer)"
         Write-Host "::set-output name=semver::($env:GitVersion_SemVer)"
         dotnet gitversion /output file /outputfile version.json
       env: 
