@@ -38,6 +38,8 @@ jobs:
         echo "SemVer: $($env:GitVersion_SemVer)" 
         Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
         Write-Host $semver
+        $fileName = "dummy-$($env:GitVersion_SemVer)"
+        Write-Host "Filename: '$fileName'"
         
     - name: Gitversion   
       id: gitver
@@ -57,5 +59,6 @@ jobs:
       run: |
           Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
           Write-Host $semver
-     
+          $fileName = "dummy-$($env:GitVersion_SemVer)"
+          Write-Host "Filename: '$fileName'"
   
