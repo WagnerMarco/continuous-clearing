@@ -13,6 +13,7 @@ jobs:
     
     outputs:
       semver: ${{ steps.gitversion.outputs.semver }}
+      semver2: ${{ steps.gitver.outputs.semver2 }}
       LicenseClearingTool: ${{ steps.packageBuildResults.outputs.LicenseClearingTool }}
         
     steps:
@@ -37,8 +38,9 @@ jobs:
         echo "SemVer: $($env:GitVersion_SemVer)" 
         Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
         Write-Host "$semver" 
-    - name: Gitversion    
-      if: ${{ false }}  # disable for now
+    - name: Gitversion   
+      id: gitver
+      #if: ${{ false }}  # disable for now
       run: |
         dotnet tool install --global GitVersion.Tool --version 5.3.6
         dotnet gitversion /output buildserver /nofetch
@@ -50,7 +52,7 @@ jobs:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
         
     - name: Store SemVer
-      if: ${{ false }}  # disable for now
+      #if: ${{ false }}  # disable for now
       run: |
           Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
           Write-Host "$semver"
