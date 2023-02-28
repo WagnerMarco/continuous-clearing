@@ -26,7 +26,7 @@ jobs:
     
      
     - name: Determine Version
-      if: ${{ false }}  # disable for now
+      #if: ${{ false }}  # disable for now
       uses: gittools/actions/gitversion/execute@v0.9.7
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
