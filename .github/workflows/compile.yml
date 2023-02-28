@@ -32,7 +32,7 @@ jobs:
 
     - name: Display SemVer
       run: |
-        echo "SemVer: $($GITVERSION_SEMVER)" 
+        echo "SemVer: $($env:GitVersion_SemVer)" 
      
     - name: Gitversion
       id: gitversion
