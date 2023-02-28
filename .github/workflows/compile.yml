@@ -27,12 +27,13 @@ jobs:
     
      
     - name: Determine Version
-      #if: ${{ false }}  # disable for now
+      if: ${{ false }}  # disable for now
       uses: gittools/actions/gitversion/execute@v0.9.7
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
 
-    - name: get SemVer  
+    - name: get SemVer 
+      if: ${{ false }}  # disable for now
       id: gitversion
       run: |
         echo "SemVer: $($env:GitVersion_SemVer)" 
@@ -42,6 +43,7 @@ jobs:
         Write-Host "Filename: '$fileName'"
         
     - name: Gitversion   
+      if: ${{ false }}  # disable for now
       id: gitver
       #if: ${{ false }}  # disable for now
       run: |
@@ -55,7 +57,7 @@ jobs:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
         
     - name: Store SemVer
-      if: ${{ false }}  # disable for now
+      #if: ${{ false }}  # disable for now
       run: |
           Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
           Write-Host $semver
