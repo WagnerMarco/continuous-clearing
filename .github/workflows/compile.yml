@@ -31,13 +31,11 @@ jobs:
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
 
-    - name: Display SemVer
-      if: ${{ false }}  # disable for now
+    - name: Display SemVer      
       run: |
         echo "SemVer: $($env:GitVersion_SemVer)" 
      
-    - name: Gitversion
-      if: ${{ false }}  # disable for now
+    - name: Gitversion    
       id: gitversion
       run: |
         dotnet tool install --global GitVersion.Tool --version 5.3.6
