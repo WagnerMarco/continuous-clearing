@@ -25,12 +25,12 @@ jobs:
         nuget-version: '5.x'
     
      
-    #- name: Determine Version
-     # uses: gittools/actions/gitversion/execute@v0.9.7
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v0.9.7
 
-    #- name: Display SemVer
-     # run: |
-     #   echo "SemVer: $GITVERSION_SEMVER" 
+    - name: Display SemVer
+      run: |
+        echo "SemVer: $GITVERSION_SEMVER" 
      
     - name: Gitversion
       id: gitversion
@@ -51,6 +51,7 @@ jobs:
         echo "SemVer: $($GitVersion_SemVer)"
         Write-Host "version is: $($env:GitVersion_SemVer)"
         Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
+        Write-Host "$semver"
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
      
