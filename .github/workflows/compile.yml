@@ -36,7 +36,7 @@ jobs:
       run: |
         echo "SemVer: $($env:GitVersion_SemVer)" 
         Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
-        echo "SemVer: $semver" 
+        Write-Host "$semver" 
     - name: Gitversion    
       if: ${{ false }}  # disable for now
       run: |
