@@ -39,23 +39,16 @@ jobs:
       run: |
         dotnet tool install --global GitVersion.Tool --version 5.3.6
         dotnet gitversion /output buildserver /nofetch
-        echo %GITVERSION_SEMVER%
-        echo "SemVer: $GITVERSION_SEMVER"
-        echo "SemVer: $GitVersion_SemVer" 
-        echo "SemVer: $($GitVersion_SemVer)"
-        Write-Host "version is: $($env:GitVersion_SemVer)"
-        Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
-
         dotnet gitversion /output file /outputfile version.json
-        echo %GITVERSION_SEMVER%
-        echo "SemVer: $GITVERSION_SEMVER"
-        echo "SemVer: $GitVersion_SemVer" 
-        echo "SemVer: $($GitVersion_SemVer)"
-        Write-Host "version is: $($env:GitVersion_SemVer)"
-        Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
-        Write-Host "$semver"
+        
+        Write-Host "::set-output name=semver2::$($env:GitVersion_SemVer)"
+        Write-Host "$semver2"
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
-     
+        
+    - name: Store SemVer
+      run: |
+          Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
+          Write-Host "$semver"
      
   
