@@ -29,6 +29,7 @@ jobs:
       id: gitversion
       run: |
           Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
+          
     - name: Determine Version
       if: ${{ false }}  # disable for now
       uses: gittools/actions/gitversion/execute@v0.9.7
@@ -40,7 +41,7 @@ jobs:
 
     - name: get SemVer 
       if: ${{ false }}  # disable for now
-      id: gitversion
+      #id: gitversion
       run: |
         echo "SemVer: $($env:GitVersion_SemVer)" 
         Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
