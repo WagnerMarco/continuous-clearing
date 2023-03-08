@@ -36,6 +36,8 @@ jobs:
     - name: Setup Version
       #if: ${{ false }}  # disable for now
       uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: '5.3.6'
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
         
