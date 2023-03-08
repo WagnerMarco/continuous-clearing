@@ -9,7 +9,7 @@ jobs:
   
     defaults:
       run:
-        working-directory: ./src
+        working-directory: .
     
     outputs:
       semver: ${{ steps.gitversion.outputs.semver }}
@@ -22,7 +22,15 @@ jobs:
       with:
         fetch-depth: 0
     
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
     
+    - name: Restore Packages
+      run: dotnet restore src\LicenseClearingTool.sln 
+    
+    - name: Build
+      run: msbuild -m -t:Rebuild -p:Configuration=Release -bl:continous-clearing.binlog -noconlog src\LicenseClearingTool.sln
+   
     - name: Store SemVer
       id: gitversion
       run: |
