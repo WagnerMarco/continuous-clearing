@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: self-hosted
   
     defaults:
       run:
@@ -34,7 +34,7 @@ jobs:
           Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
           
     - name: Setup Version
-      if: ${{ false }}  # disable for now
+      #if: ${{ false }}  # disable for now
       uses: gittools/actions/gitversion/setup@v0.9.7
       env: 
         ACTIONS_ALLOW_UNSECURE_COMMANDS: TRUE
