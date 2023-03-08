@@ -25,14 +25,11 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     
-    - name: Restore Packages
-      run: dotnet restore src\LicenseClearingTool.sln 
-    
-    - name: Build
-      run: msbuild -m -t:Rebuild -p:Configuration=Release -bl:continous-clearing.binlog -noconlog src\LicenseClearingTool.sln
+   
    
     - name: Store SemVer
-      id: gitversion
+      if: ${{ false }}  # disable for now
+      #id: gitversion
       run: |
           Write-Host "::set-output name=semver::$($env:GitVersion_SemVer)"
           
@@ -56,7 +53,7 @@ jobs:
         Write-Host "Filename: '$fileName'"
         
     - name: Gitversion   
-      if: ${{ false }}  # disable for now
+      #if: ${{ false }}  # disable for now
       id: gitver      
       run: |
         dotnet tool install --global GitVersion.Tool --version 5.3.6
@@ -75,4 +72,10 @@ jobs:
           Write-Host $semver
           $fileName = "dummy-$($env:GitVersion_SemVer)"
           Write-Host "Filename: '$fileName'"
+          
+    - name: Restore Packages
+      run: dotnet restore src\LicenseClearingTool.sln 
+    
+    - name: Build
+      run: msbuild -m -t:Rebuild -p:Configuration=Release -bl:continous-clearing.binlog -noconlog src\LicenseClearingTool.sln
   
